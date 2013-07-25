@@ -2,16 +2,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class NetLoginCMD2 implements NetLoginListener {
+public class NetLoginCMD implements NetLoginListener {
 
 	private NetLoginConnection conn;
 
-	public NetLoginCMD2() {
+	public NetLoginCMD() {
 		conn = new NetLoginConnection(this);
 	}
 
 	public static void main(String[] paramArrayOfString) throws Exception {
-		NetLoginCMD2 nlcmd = new NetLoginCMD2();
+		NetLoginCMD nlcmd = new NetLoginCMD();
 		Properties p = new Properties();
 		p.load(new FileInputStream("config.prop"));
 		nlcmd.login(p);
