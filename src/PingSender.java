@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import nz.ac.auckland.cs.des.Key_schedule;
 import nz.ac.auckland.cs.des.desDataOutputStream;
 
+@SuppressWarnings("resource")
 public class PingSender extends Thread {
 	private DatagramSocket s = null;
 	private int Auth_Ref = -1;
@@ -27,13 +28,11 @@ public class PingSender extends Thread {
 		// System.out.println(use?"Using ping timeouts.":"Not using ping timeouts.");
 	}
 
-	public PingSender(String paramString, int paramInt, NetLoginListener parent)
-			throws IOException {
+	public PingSender(String paramString, int paramInt, NetLoginListener parent) throws IOException {
 		try {
 			this.s = new DatagramSocket();
 		} catch (Exception localException) {
-			throw new IOException("Error creating DatagramSocket: "
-					+ localException);
+			throw new IOException("Error creating DatagramSocket: " + localException);
 		}
 		this.Host = paramString;
 		this.Port = paramInt;
@@ -41,8 +40,7 @@ public class PingSender extends Thread {
 		this.parent = parent;
 	}
 
-	public void prepare(Key_schedule paramKey_schedule, int paramInt1,
-			int paramInt2, int paramInt3) {
+	public void prepare(Key_schedule paramKey_schedule, int paramInt1, int paramInt2, int paramInt3) {
 		this.schedule = paramKey_schedule;
 		this.Auth_Ref = paramInt1;
 		this.outtoken = paramInt2;
@@ -55,23 +53,20 @@ public class PingSender extends Thread {
 
 	public void stopPinging() {
 		DatagramPacket localDatagramPacket = null;
-		desDataOutputStream localdesDataOutputStream1 = new desDataOutputStream(
-				128);
-		desDataOutputStream localdesDataOutputStream2 = new desDataOutputStream(
-				128);
+		desDataOutputStream localdesDataOutputStream1 = new desDataOutputStream(128);
+		desDataOutputStream localdesDataOutputStream2 = new desDataOutputStream(128);
+
 		try {
 			localdesDataOutputStream2.writeInt(this.outtoken);
 			localdesDataOutputStream2.writeInt(this.Sequence_Number + 10000);
-			byte[] arrayOfByte1 = localdesDataOutputStream2
-					.des_encrypt(this.schedule);
+			byte[] arrayOfByte1 = localdesDataOutputStream2.des_encrypt(this.schedule);
 			localdesDataOutputStream1.writeInt(this.Auth_Ref);
-			localdesDataOutputStream1.write(arrayOfByte1, 0,
-					arrayOfByte1.length);
+			localdesDataOutputStream1.write(arrayOfByte1, 0, arrayOfByte1.length);
 			byte[] arrayOfByte2 = localdesDataOutputStream1.toByteArray();
-			localDatagramPacket = new DatagramPacket(arrayOfByte2,
-					arrayOfByte2.length, this.Host_IPAddr, this.Port);
+			localDatagramPacket = new DatagramPacket(arrayOfByte2, arrayOfByte2.length, this.Host_IPAddr, this.Port);
 			this.s.send(localDatagramPacket);
 		} catch (Exception localException) {
+		} finally {
 		}
 		this.stop = true;
 		interrupt();
@@ -87,15 +82,12 @@ public class PingSender extends Thread {
 
 	public void sendMessage(String paramString1, String paramString2) {
 		DatagramPacket localDatagramPacket = null;
-		desDataOutputStream localdesDataOutputStream = new desDataOutputStream(
-				8192);
+		desDataOutputStream localdesDataOutputStream = new desDataOutputStream(8192);
 		try {
 			localdesDataOutputStream.writeInt(-1);
-			localdesDataOutputStream.writeBytes("senduser " + paramString1
-					+ " " + paramString2 + " ");
+			localdesDataOutputStream.writeBytes("senduser " + paramString1 + " " + paramString2 + " ");
 			byte[] arrayOfByte = localdesDataOutputStream.toByteArray();
-			localDatagramPacket = new DatagramPacket(arrayOfByte,
-					arrayOfByte.length, this.Host_IPAddr, this.Port);
+			localDatagramPacket = new DatagramPacket(arrayOfByte, arrayOfByte.length, this.Host_IPAddr, this.Port);
 			this.s.send(localDatagramPacket);
 		} catch (IOException localIOException) {
 			System.out.println("PingSender: Error sending message");
@@ -104,25 +96,19 @@ public class PingSender extends Thread {
 
 	public synchronized void run() {
 		DatagramPacket localDatagramPacket = null;
-		desDataOutputStream localdesDataOutputStream1 = new desDataOutputStream(
-				128);
-		desDataOutputStream localdesDataOutputStream2 = new desDataOutputStream(
-				128);
+		desDataOutputStream localdesDataOutputStream1 = new desDataOutputStream(128);
+		desDataOutputStream localdesDataOutputStream2 = new desDataOutputStream(128);
 		int i = 0;
 		setPriority(2);
-		while ((!this.stop) && (this.outstandingPings < keepAliveTimeout)
-				&& (i < 10)) {
+		while ((!this.stop) && (this.outstandingPings < keepAliveTimeout) && (i < 10)) {
 			try {
 				localdesDataOutputStream2.writeInt(this.outtoken);
 				localdesDataOutputStream2.writeInt(this.Sequence_Number);
-				byte[] arrayOfByte1 = localdesDataOutputStream2
-						.des_encrypt(this.schedule);
+				byte[] arrayOfByte1 = localdesDataOutputStream2.des_encrypt(this.schedule);
 				localdesDataOutputStream1.writeInt(this.Auth_Ref);
-				localdesDataOutputStream1.write(arrayOfByte1, 0,
-						arrayOfByte1.length);
+				localdesDataOutputStream1.write(arrayOfByte1, 0, arrayOfByte1.length);
 				byte[] arrayOfByte2 = localdesDataOutputStream1.toByteArray();
-				localDatagramPacket = new DatagramPacket(arrayOfByte2,
-						arrayOfByte2.length, this.Host_IPAddr, this.Port);
+				localDatagramPacket = new DatagramPacket(arrayOfByte2, arrayOfByte2.length, this.Host_IPAddr, this.Port);
 				this.s.send(localDatagramPacket);
 				this.Sequence_Number += 1;
 				// System.out.println("sent a keepalive. "+outstandingPings);
@@ -134,8 +120,6 @@ public class PingSender extends Thread {
 			}
 			localdesDataOutputStream2.reset();
 			localdesDataOutputStream1.reset();
-			byte[] arrayOfByte1 = null;
-			byte[] arrayOfByte2 = null;
 			localDatagramPacket = null;
 			try {
 				sleep(10000L);
@@ -153,6 +137,5 @@ public class PingSender extends Thread {
 }
 
 /*
- * Location: C:\Documents and Settings\Josh\Desktop\JNetLogin.jar Qualified
- * Name: PingSender JD-Core Version: 0.6.2
+ * Location: C:\Documents and Settings\Josh\Desktop\JNetLogin.jar Qualified Name: PingSender JD-Core Version: 0.6.2
  */

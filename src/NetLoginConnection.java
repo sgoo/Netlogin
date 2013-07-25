@@ -3,11 +3,12 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Random;
-import nz.ac.auckland.cs.des.C_Block;
+
 import nz.ac.auckland.cs.des.Key_schedule;
 import nz.ac.auckland.cs.des.desDataInputStream;
 import nz.ac.auckland.cs.des.desDataOutputStream;
 
+@SuppressWarnings("resource")
 public class NetLoginConnection {
 	final String AUTHD_SERVER = "gate.ec.auckland.ac.nz";
 	final int AUTHD_PORT = 312;
@@ -67,29 +68,24 @@ public class NetLoginConnection {
 		this.parent = parent;
 	}
 
-	public void login(String paramString1, String paramString2)
-			throws IOException {
+	public void login(String paramString1, String paramString2) throws IOException {
 		login("gate.ec.auckland.ac.nz", paramString1, paramString2);
 	}
 
-	public void login(String paramString1, String paramString2,
-			String paramString3) throws IOException {
+	public void login(String paramString1, String paramString2, String paramString3) throws IOException {
 		username = paramString2;
 		pinger = new PingSender(paramString1, 443, this.parent);
 		pinger.setUsePingTimeout(usePingTimeout);
 		if (this.useStaticPingPort) {
-			this.ping_receiver = new PingRespHandler(this.parent, this.pinger,
-					this.pinger.getSocket());
+			this.ping_receiver = new PingRespHandler(this.parent, this.pinger, this.pinger.getSocket());
 			this.Response_Port = 0;
 		} else {
 			this.ping_receiver = new PingRespHandler(this.parent, this.pinger);
 			this.Response_Port = this.ping_receiver.getLocalPort();
 		}
 		authenticate(paramString1, paramString2, paramString3);
-		this.pinger.prepare(this.schedule, this.Auth_Ref, this.random2 + 2,
-				this.Sequence_Number);
-		this.ping_receiver.prepare(this.random1 + 3, this.Sequence_Number,
-				this.schedule);
+		this.pinger.prepare(this.schedule, this.Auth_Ref, this.random2 + 2, this.Sequence_Number);
+		this.ping_receiver.prepare(this.random1 + 3, this.Sequence_Number, this.schedule);
 		this.ping_receiver.start();
 		this.pinger.start();
 		this.parent.update(this.IPBalance, (this.OnPeak & 0x1) == 1, true);
@@ -117,12 +113,10 @@ public class NetLoginConnection {
 
 	public void sendMessage(String paramString1, String paramString2) {
 		if (this.pinger != null)
-			this.pinger.sendMessage(paramString1, this.username + ": "
-					+ paramString2);
+			this.pinger.sendMessage(paramString1, this.username + ": " + paramString2);
 	}
 
-	private void authenticate(String paramString1, String paramString2,
-			String paramString3) throws IOException, UnknownHostException {
+	private void authenticate(String paramString1, String paramString2, String paramString3) throws IOException, UnknownHostException {
 		try {
 			this.NetGuardian_stream = new SPP_Packet(paramString1, 312);
 			this.schedule = new Key_schedule(paramString3);
@@ -143,43 +137,33 @@ public class NetLoginConnection {
 	}
 
 	private void sendPacket_1(String paramString) throws IOException {
-		desDataOutputStream localdesDataOutputStream1 = new desDataOutputStream(
-				128);
-		desDataOutputStream localdesDataOutputStream2 = new desDataOutputStream(
-				128);
+		desDataOutputStream localdesDataOutputStream1 = new desDataOutputStream(128);
+		desDataOutputStream localdesDataOutputStream2 = new desDataOutputStream(128);
 		this.random1 = this.r.nextInt();
 		localdesDataOutputStream2.writeInt(this.random1);
-		byte[] arrayOfByte = localdesDataOutputStream2
-				.des_encrypt(this.schedule);
+		byte[] arrayOfByte = localdesDataOutputStream2.des_encrypt(this.schedule);
 		localdesDataOutputStream1.writeInt(this.clienttype);
 		localdesDataOutputStream1.writeInt(this.clientversion);
 		localdesDataOutputStream1.writeBytes(paramString, 9);
 		localdesDataOutputStream1.write(arrayOfByte, 0, arrayOfByte.length);
-		this.NetGuardian_stream.SendPacket(1, 0,
-				localdesDataOutputStream1.toByteArray());
+		this.NetGuardian_stream.SendPacket(1, 0, localdesDataOutputStream1.toByteArray());
 	}
 
 	private void RespPacket_1() throws IOException {
 		DataInputStream localDataInputStream = null;
-		if (this == null || this.NetGuardian_stream == null
-				|| this.InBuffer == null)
+		if (this == null || this.NetGuardian_stream == null || this.InBuffer == null)
 			return;
-		ReadResult localReadResult = this.NetGuardian_stream.ReadPacket(2, 0,
-				this.InBuffer);
+		ReadResult localReadResult = this.NetGuardian_stream.ReadPacket(2, 0, this.InBuffer);
 		switch (localReadResult.Result) {
 		case -4:
-			throw new IOException("Unexpected PacketType "
-					+ localReadResult.Packet_type + " expected " + 2);
+			throw new IOException("Unexpected PacketType " + localReadResult.Packet_type + " expected " + 2);
 		case -100:
 			String str = "Client Version incorrect";
-			localDataInputStream = new DataInputStream(
-					new ByteArrayInputStream(this.InBuffer, 0,
-							this.NetGuardian_stream.Last_Read_length));
+			localDataInputStream = new DataInputStream(new ByteArrayInputStream(this.InBuffer, 0, this.NetGuardian_stream.Last_Read_length));
 			try {
 				this.Client_Rel_Version = localDataInputStream.readInt();
 				if (this.Client_Rel_Version > 0) {
-					str = str + "\rThe latest version is "
-							+ this.Client_Rel_Version;
+					str = str + "\rThe latest version is " + this.Client_Rel_Version;
 					try {
 						int j = localDataInputStream.readInt();
 						if (j != 0) {
@@ -208,14 +192,11 @@ public class NetLoginConnection {
 		// IOException("RespPacket_1: AUTH_REQ_RESPONSE_PACKET too short, " +
 		// this.NetGuardian_stream.Last_Read_length + " bytes " + C_Block.size()
 		// * 4);
-		localDataInputStream = new DataInputStream(new ByteArrayInputStream(
-				this.InBuffer, 0, 4));
+		localDataInputStream = new DataInputStream(new ByteArrayInputStream(this.InBuffer, 0, 4));
 		this.Client_Rel_Version = localDataInputStream.readInt();
 		if (this == null || this.NetGuardian_stream == null)
 			return;
-		desDataInputStream localdesDataInputStream = new desDataInputStream(
-				this.InBuffer, 4, this.NetGuardian_stream.Last_Read_length,
-				this.schedule);
+		desDataInputStream localdesDataInputStream = new desDataInputStream(this.InBuffer, 4, this.NetGuardian_stream.Last_Read_length, this.schedule);
 		int i = localdesDataInputStream.readInt();
 		if (this.random1 + 1 != i)
 			throw new IOException("Incorrect password");
@@ -226,15 +207,13 @@ public class NetLoginConnection {
 	private void SendSecondPacket() throws IOException {
 		if (this == null || this.NetGuardian_stream == null)
 			return;
-		desDataOutputStream localdesDataOutputStream = new desDataOutputStream(
-				128);
+		desDataOutputStream localdesDataOutputStream = new desDataOutputStream(128);
 		this.cmd_data = ((short) this.Response_Port);
 		localdesDataOutputStream.writeInt(this.random2 + 1);
 		localdesDataOutputStream.writeInt(this.clientcommand);
 		localdesDataOutputStream.writeInt(this.cmd_data_length);
 		localdesDataOutputStream.writeShort(this.cmd_data);
-		byte[] arrayOfByte = localdesDataOutputStream
-				.des_encrypt(this.schedule);
+		byte[] arrayOfByte = localdesDataOutputStream.des_encrypt(this.schedule);
 		this.NetGuardian_stream.SendPacket(3, 0, arrayOfByte);
 	}
 
@@ -243,12 +222,10 @@ public class NetLoginConnection {
 			return;
 		DataInputStream localDataInputStream = null;
 		ReadResult localReadResult = null;
-		localReadResult = this.NetGuardian_stream.ReadPacket(4, 0,
-				this.InBuffer);
+		localReadResult = this.NetGuardian_stream.ReadPacket(4, 0, this.InBuffer);
 		switch (localReadResult.Result) {
 		case -4:
-			throw new IOException("Unexpected PacketType "
-					+ localReadResult.Packet_type + " expected " + 2);
+			throw new IOException("Unexpected PacketType " + localReadResult.Packet_type + " expected " + 2);
 		case 0:
 			break;
 		default:
@@ -257,10 +234,8 @@ public class NetLoginConnection {
 		if (this == null || this.NetGuardian_stream == null)
 			return;
 		if (this.NetGuardian_stream.Last_Read_length < 40)
-			throw new IOException(
-					"ReadSecondResponsePacket: AUTH_CONFIRM_RESPONSE_PACKET too short");
-		localDataInputStream = new DataInputStream(new ByteArrayInputStream(
-				this.InBuffer, 0, 28));
+			throw new IOException("ReadSecondResponsePacket: AUTH_CONFIRM_RESPONSE_PACKET too short");
+		localDataInputStream = new DataInputStream(new ByteArrayInputStream(this.InBuffer, 0, 28));
 		this.OnPeak = localDataInputStream.readInt();
 		this.localUnitCost = localDataInputStream.readInt();
 		this.intlOffPeakRate = localDataInputStream.readInt();
@@ -268,20 +243,16 @@ public class NetLoginConnection {
 		this.start_Peak = localDataInputStream.readInt();
 		this.endPeak = localDataInputStream.readInt();
 		this.lastModDate = localDataInputStream.readInt();
-		desDataInputStream localdesDataInputStream = new desDataInputStream(
-				this.InBuffer, 28, this.NetGuardian_stream.Last_Read_length,
-				this.schedule);
+		desDataInputStream localdesDataInputStream = new desDataInputStream(this.InBuffer, 28, this.NetGuardian_stream.Last_Read_length, this.schedule);
 		int i = localdesDataInputStream.readInt();
 		if (this.random1 + 2 != i)
 			throw new IOException("Incorrect password");
 		int j = localdesDataInputStream.readInt();
 		int k = localdesDataInputStream.readInt();
 		if ((j != 1) && (j != 10))
-			throw new IOException("got Nack on authentication "
-					+ Errors.error_messages[j]);
+			throw new IOException("got Nack on authentication " + Errors.error_messages[j]);
 		if (j == 10)
-			throw new IOException(
-					"User record is locked. Unable to read IP balance");
+			throw new IOException("User record is locked. Unable to read IP balance");
 		if (k < 8)
 			throw new IOException("Cmd result buffer too small");
 		this.Auth_Ref = localdesDataInputStream.readInt();

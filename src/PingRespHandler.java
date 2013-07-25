@@ -1,15 +1,14 @@
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.PrintStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+
 import nz.ac.auckland.cs.des.Key_schedule;
 import nz.ac.auckland.cs.des.desDataInputStream;
 
+@SuppressWarnings("resource")
 public class PingRespHandler extends Thread {
 	private NetLoginListener parent = null;
-	private final int ACK = 1;
-	private final int NACK = 0;
 	private int inToken = 0;
 	private DatagramSocket s = null;
 	private Key_schedule schedule = null;
@@ -17,24 +16,21 @@ public class PingRespHandler extends Thread {
 	private int Next_Sequence_Number_Expected = 0;
 	private PingSender pinger;
 
-	public PingRespHandler(NetLoginListener parent, PingSender paramPingSender)
-			throws IOException {
+	public PingRespHandler(NetLoginListener parent, PingSender paramPingSender) throws IOException {
 		this.parent = parent;
 		this.pinger = paramPingSender;
 		this.s = new DatagramSocket();
 		this.s.setSoTimeout(500);
 	}
 
-	public PingRespHandler(NetLoginListener parent, PingSender paramPingSender,
-			DatagramSocket paramDatagramSocket) throws IOException {
+	public PingRespHandler(NetLoginListener parent, PingSender paramPingSender, DatagramSocket paramDatagramSocket) throws IOException {
 		this.parent = parent;
 		this.pinger = paramPingSender;
 		this.s = paramDatagramSocket;
 		this.s.setSoTimeout(500);
 	}
 
-	public void prepare(int paramInt1, int paramInt2,
-			Key_schedule paramKey_schedule) {
+	public void prepare(int paramInt1, int paramInt2, Key_schedule paramKey_schedule) {
 		this.inToken = paramInt1;
 		this.Next_Sequence_Number_Expected = paramInt2;
 		this.schedule = paramKey_schedule;
@@ -51,16 +47,12 @@ public class PingRespHandler extends Thread {
 
 	public synchronized void run() {
 		byte[] arrayOfByte1 = new byte[8192];
-		DatagramPacket localDatagramPacket = new DatagramPacket(arrayOfByte1,
-				arrayOfByte1.length);
+		DatagramPacket localDatagramPacket = new DatagramPacket(arrayOfByte1, arrayOfByte1.length);
 		int i2 = 0;
 		int i3 = 0;
 		setPriority(2);
-		while ((this.loop)
-				&& (i2 < 10)
-				&& (this.pinger.getOutstandingPings() < pinger.keepAliveTimeout)) {
-			localDatagramPacket = new DatagramPacket(arrayOfByte1,
-					arrayOfByte1.length);
+		while ((this.loop) && (i2 < 10) && (this.pinger.getOutstandingPings() < pinger.keepAliveTimeout)) {
+			localDatagramPacket = new DatagramPacket(arrayOfByte1, arrayOfByte1.length);
 			try {
 				this.s.receive(localDatagramPacket);
 				System.out.println("RECIEVED SOMETHING!");
@@ -78,19 +70,16 @@ public class PingRespHandler extends Thread {
 				System.out.println("Short packet");
 				i2++;
 			} else {
-				desDataInputStream localdesDataInputStream = new desDataInputStream(
-						localDatagramPacket.getData(), 0, k, this.schedule);
+				desDataInputStream localdesDataInputStream = new desDataInputStream(localDatagramPacket.getData(), 0, k, this.schedule);
 				try {
 					int i = localdesDataInputStream.readInt();
 					if (this.inToken != i) {
-						System.out
-								.println("Other end doesn't agree on the current passwd");
+						System.out.println("Other end doesn't agree on the current passwd");
 						i2++;
 					} else {
 						int j = localdesDataInputStream.readInt();
 						if (this.Next_Sequence_Number_Expected > j) {
-							System.out
-									.println("Ping responce sequence numbers out");
+							System.out.println("Ping responce sequence numbers out");
 						} else {
 							this.Next_Sequence_Number_Expected = (j + 1);
 							int m = localdesDataInputStream.readInt();
@@ -99,8 +88,7 @@ public class PingRespHandler extends Thread {
 							int i1 = localdesDataInputStream.readInt();
 							byte[] arrayOfByte2 = new byte[i1];
 							localdesDataInputStream.read(arrayOfByte2);
-							this.parent.updateV3(m, i3, true, new String(
-									arrayOfByte2));
+							this.parent.updateV3(m, i3, true, new String(arrayOfByte2));
 							i2 = 0;
 							this.pinger.zeroOutstandingPings();
 							System.out.println("recieved a keepalive.");
@@ -109,8 +97,7 @@ public class PingRespHandler extends Thread {
 						}
 					}
 				} catch (Exception localException) {
-					System.out
-							.println("ping recv: Exception:" + localException);
+					System.out.println("ping recv: Exception:" + localException);
 					i2++;
 				}
 			}
@@ -123,6 +110,5 @@ public class PingRespHandler extends Thread {
 }
 
 /*
- * Location: C:\Documents and Settings\Josh\Desktop\JNetLogin.jar Qualified
- * Name: PingRespHandler JD-Core Version: 0.6.2
+ * Location: C:\Documents and Settings\Josh\Desktop\JNetLogin.jar Qualified Name: PingRespHandler JD-Core Version: 0.6.2
  */
