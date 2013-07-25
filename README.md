@@ -1,7 +1,7 @@
 Netlogin
 ========
 
-Modified version of JNetlogin that reconnects when the connection is lost
-Current Version: 0.1 6/05/2013
+Based on https://github.com/AucklandRobotics/Netlogin
+provides only a CLI mode
+needs a prop file with login information
 
-Developed by Kerey Watters, distributed by AURA
