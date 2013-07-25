@@ -16,8 +16,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.Method;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -35,8 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
-public class NetLoginGUI extends JFrame
-{
+public class NetLoginGUI extends JFrame implements NetLoginListener {
 	private static final long serialVersionUID = 1L;
 	private JLabel upititle = new JLabel("UPI:  ");
 	private JLabel plantitle = new JLabel("Internet Plan:  ");
@@ -62,38 +61,37 @@ public class NetLoginGUI extends JFrame
 	static String helpURL = "http://www.ec.auckland.ac.nz/docs/net-student.htm";
 	static String passwdChangeURL = "https://admin.ec.auckland.ac.nz/Passwd/";
 	static String icon_imagename = "jnetlogin16x16.gif";
-	static String rev="1";
-	static String aboutInfo = "JNetLogin Client Version " + versionNumber + "\nCopyright(C) 2001-2010 The University of Auckland.\n" + "Release under terms of the GNU GPL. \n\nUnofficial DC Bug fix (rev"+rev+") by AURA (Kerey)";
+	static String rev = "1";
+	static String aboutInfo = "JNetLogin Client Version "
+			+ versionNumber
+			+ "\nCopyright(C) 2001-2010 The University of Auckland.\n"
+			+ "Release under terms of the GNU GPL. \n\nUnofficial DC Bug fix (rev"
+			+ rev + ") by AURA (Kerey)";
 
-	public NetLoginGUI()
-	{
-		super("JNetLoggedIn "+versionNumber+" r"+rev);
+	public NetLoginGUI() {
+		super("JNetLoggedIn " + versionNumber + " r" + rev);
 		NetLoginGUIBody();
 	}
 
-	public NetLoginGUI(String paramString1, String paramString2)
-	{
+	public NetLoginGUI(String paramString1, String paramString2) {
 		NetLoginGUIBody();
 		if (this.netLoginConnection == null)
 			this.netLoginConnection = new NetLoginConnection(this);
-		this.netLoginConnection.setUseStaticPingPort(this.p.getUseStaticPingPort());
+		this.netLoginConnection.setUseStaticPingPort(this.p
+				.getUseStaticPingPort());
 		this.netLoginConnection.setUsePingTimeout(this.p.getUsePingTimeout());
-		try
-		{
-			rememberedPassword=paramString2;
+		try {
+			rememberedPassword = paramString2;
 			this.netLoginConnection.login(paramString1, paramString2);
 			this.loginDialog.setVisible(false);
-		}
-		catch (IOException localIOException)
-		{
-			//showError(localIOException.getMessage());
+		} catch (IOException localIOException) {
+			// showError(localIOException.getMessage());
 		}
 		this.statusLabel.setText(paramString1);
 		this.loginTF.setText(paramString1);
 	}
 
-	public void NetLoginGUIBody()
-	{
+	public void NetLoginGUIBody() {
 		if (this.netLoginConnection == null)
 			this.netLoginConnection = new NetLoginConnection(this);
 		makeLoginDialog();
@@ -116,39 +114,42 @@ public class NetLoginGUI extends JFrame
 		this.connectButton.setFont(this.globalTitleFont);
 		this.connectButton.setForeground(this.globalTitleColor);
 		this.connectButton.setToolTipText("Login to NetAccount");
-		this.connectButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		this.connectButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				if (!NetLoginGUI.this.connected)
 					NetLoginGUI.this.loginDialog.setVisible(true);
 				else
 					NetLoginGUI.this.disconnect();
 			}
 		});
-		addExternal(localJPanel, localGridBagConstraints, 0, 0, this.upititle, 3, 13);
-		addExternal(localJPanel, localGridBagConstraints, 0, 1, this.plantitle, 3, 13);
-		addExternal(localJPanel, localGridBagConstraints, 0, 2, this.usagetitle, 3, 13);
-		addExternal(localJPanel, localGridBagConstraints, 1, 0, this.statusLabel, 3, 17);
-		addExternal(localJPanel, localGridBagConstraints, 1, 1, this.planLabel, 3, 17);
-		addExternal(localJPanel, localGridBagConstraints, 1, 2, this.usageLabel, 3, 17);
-		addExternal(localJPanel, localGridBagConstraints, 0, 3, new JSeparator(), 2, 10);
-		addExternal(localJPanel, localGridBagConstraints, 1, 3, new JSeparator(), 2, 10);
-		addExternal(localJPanel, localGridBagConstraints, 1, 4, this.connectButton, 0, 10);
+		addExternal(localJPanel, localGridBagConstraints, 0, 0, this.upititle,
+				3, 13);
+		addExternal(localJPanel, localGridBagConstraints, 0, 1, this.plantitle,
+				3, 13);
+		addExternal(localJPanel, localGridBagConstraints, 0, 2,
+				this.usagetitle, 3, 13);
+		addExternal(localJPanel, localGridBagConstraints, 1, 0,
+				this.statusLabel, 3, 17);
+		addExternal(localJPanel, localGridBagConstraints, 1, 1, this.planLabel,
+				3, 17);
+		addExternal(localJPanel, localGridBagConstraints, 1, 2,
+				this.usageLabel, 3, 17);
+		addExternal(localJPanel, localGridBagConstraints, 0, 3,
+				new JSeparator(), 2, 10);
+		addExternal(localJPanel, localGridBagConstraints, 1, 3,
+				new JSeparator(), 2, 10);
+		addExternal(localJPanel, localGridBagConstraints, 1, 4,
+				this.connectButton, 0, 10);
 		makeMenuBar();
 		setDefaultCloseOperation(0);
-		addWindowListener(new WindowAdapter()
-		{
-			public void windowClosing(WindowEvent paramAnonymousWindowEvent)
-			{
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent paramAnonymousWindowEvent) {
 				NetLoginGUI.this.savePreferences();
 				System.exit(0);
 			}
 
-			public void windowIconified(WindowEvent paramAnonymousWindowEvent)
-			{
-				if (SystemTray.isSupported())
-				{
+			public void windowIconified(WindowEvent paramAnonymousWindowEvent) {
+				if (SystemTray.isSupported()) {
 					NetLoginGUI.this.setVisible(false);
 					NetLoginGUI.this.minimizeToTray();
 				}
@@ -164,8 +165,10 @@ public class NetLoginGUI extends JFrame
 		initTrayIcon();
 	}
 
-	private void addExternal(JPanel paramJPanel, GridBagConstraints paramGridBagConstraints, int paramInt1, int paramInt2, JComponent paramJComponent, int paramInt3, int paramInt4)
-	{
+	private void addExternal(JPanel paramJPanel,
+			GridBagConstraints paramGridBagConstraints, int paramInt1,
+			int paramInt2, JComponent paramJComponent, int paramInt3,
+			int paramInt4) {
 		paramGridBagConstraints.gridx = paramInt1;
 		paramGridBagConstraints.gridy = paramInt2;
 		paramGridBagConstraints.fill = paramInt3;
@@ -173,13 +176,13 @@ public class NetLoginGUI extends JFrame
 		paramJPanel.add(paramJComponent, paramGridBagConstraints);
 	}
 
-	private void disconnect()
-	{
-		if (!this.connected)return;
+	private void disconnect() {
+		if (!this.connected)
+			return;
 		connected = false;
-		
+
 		this.netLoginConnection.logout();
-		//netLoginConnection.resetPings();
+		// netLoginConnection.resetPings();
 		statusLabel.setText("Not Connected");
 		planLabel.setText("");
 		usageLabel.setText("");
@@ -187,79 +190,75 @@ public class NetLoginGUI extends JFrame
 		loginMenuItem.setEnabled(true);
 		changePWMenuItem.setEnabled(false);
 
-		int timeout=0;
-		while (!rememberedPassword.equals("") && !connected && timeout<5){
+		int timeout = 0;
+		while (!rememberedPassword.equals("") && !connected && timeout < 5) {
 			timeout++;
 			try {
 				Thread.sleep(250);
 			} catch (InterruptedException e) {
 			}
-			
-			
-			netLoginConnection.setUseStaticPingPort(NetLoginGUI.this.p.getUseStaticPingPort());
+
+			netLoginConnection.setUseStaticPingPort(NetLoginGUI.this.p
+					.getUseStaticPingPort());
 			netLoginConnection.setUsePingTimeout(this.p.getUsePingTimeout());
-			try
-			{
-				if (NetLoginGUI.this.p.getUseAltServer()){
-					NetLoginGUI.this.netLoginConnection.login(NetLoginGUI.this.p.getAltServer(), NetLoginGUI.this.loginTF.getText(), rememberedPassword);
-					timeout=0;
-				}
-				else{
-					NetLoginGUI.this.netLoginConnection.login(NetLoginGUI.this.loginTF.getText(), rememberedPassword);
-					timeout=0;
+			try {
+				if (NetLoginGUI.this.p.getUseAltServer()) {
+					NetLoginGUI.this.netLoginConnection.login(
+							NetLoginGUI.this.p.getAltServer(),
+							NetLoginGUI.this.loginTF.getText(),
+							rememberedPassword);
+					timeout = 0;
+				} else {
+					NetLoginGUI.this.netLoginConnection.login(
+							NetLoginGUI.this.loginTF.getText(),
+							rememberedPassword);
+					timeout = 0;
 				}
 				NetLoginGUI.this.loginDialog.setVisible(false);
-			}
-			catch (IOException localIOException)
-			{
-				//this.connected = false;
+			} catch (IOException localIOException) {
+				// this.connected = false;
 			}
 			NetLoginGUI.this.passwordTF.setText("");
 		}
-		if (!rememberedPassword.equals("") && !connected && timeout==5){
-			NetLoginGUI.this.showError("Exceded max reconnect attempts. Please try again.");
+		if (!rememberedPassword.equals("") && !connected && timeout == 5) {
+			NetLoginGUI.this
+					.showError("Exceded max reconnect attempts. Please try again.");
 		}
 	}
 
-	private void savePreferences()
-	{
+	private void savePreferences() {
 		this.p.setMainDialogBounds(getBounds());
 		this.p.setLoginDialogBounds(this.loginDialog.getBounds());
 		this.p.savePreferences();
 	}
 
-	public void update(int paramInt, boolean paramBoolean1, boolean paramBoolean2, String paramString)
-	{
+	public void update(int paramInt, boolean paramBoolean1,
+			boolean paramBoolean2, String paramString) {
 		update(paramInt, paramBoolean1, paramBoolean2);
 	}
 
-	public void update(int paramInt, boolean paramBoolean1, boolean paramBoolean2)
-	{
-		if (paramBoolean2)
-		{
+	public void update(int paramInt, boolean paramBoolean1,
+			boolean paramBoolean2) {
+		if (paramBoolean2) {
 			this.connected = true;
 			this.statusLabel.setText(this.loginTF.getText());
 			this.connectButton.setToolTipText("Reconnect to NetAccount");
 			this.connectButton.setText("Reconnect");
 			this.changePWMenuItem.setEnabled(true);
 			this.loginMenuItem.setEnabled(false);
-		}
-		else
-		{
+		} else {
 			disconnect();
 		}
 	}
 
-	public void updateV3(int paramInt1, int paramInt2, boolean paramBoolean, String paramString)
-	{
-		if (paramBoolean)
-		{
+	public void updateV3(int paramInt1, int paramInt2, boolean paramBoolean,
+			String paramString) {
+		if (paramBoolean) {
 			this.connected = true;
-			float f = (float)Math.round(paramInt1 / 1024.0D * 100.0D) / 100.0F;
+			float f = (float) Math.round(paramInt1 / 1024.0D * 100.0D) / 100.0F;
 			this.usageLabel.setText("" + f + "MBs");
 			paramInt2 &= 251658240;
-			switch (paramInt2)
-			{
+			switch (paramInt2) {
 			case 16777216:
 				this.plan_name = "Staff";
 				break;
@@ -287,22 +286,18 @@ public class NetLoginGUI extends JFrame
 			this.connectButton.setText("Reconnect");
 			this.changePWMenuItem.setEnabled(true);
 			this.loginMenuItem.setEnabled(false);
-		}
-		else
-		{
+		} else {
 			disconnect();
 		}
 	}
 
-	public void showAbout()
-	{
+	public void showAbout() {
 		JOptionPane.showMessageDialog(this, aboutInfo);
 	}
 
-	private String rememberedPassword="";
-	
-	private void makeLoginDialog()
-	{
+	private String rememberedPassword = "";
+
+	private void makeLoginDialog() {
 		this.loginDialog = new JDialog();
 		JPanel localJPanel = new JPanel();
 		GridBagLayout localGridBagLayout = new GridBagLayout();
@@ -313,87 +308,99 @@ public class NetLoginGUI extends JFrame
 		localGridBagConstraints.insets = new Insets(1, 1, 1, 1);
 		final JButton localJButton = new JButton("Login");
 		localJButton.setFont(this.globalFont);
-		localJButton.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
-				NetLoginGUI.this.netLoginConnection.setUseStaticPingPort(NetLoginGUI.this.p.getUseStaticPingPort());
+		localJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
+				NetLoginGUI.this.netLoginConnection
+						.setUseStaticPingPort(NetLoginGUI.this.p
+								.getUseStaticPingPort());
 				netLoginConnection.setUsePingTimeout(p.getUsePingTimeout());
-				try
-				{
+				try {
 					if (NetLoginGUI.this.p.getUseAltServer())
-						NetLoginGUI.this.netLoginConnection.login(NetLoginGUI.this.p.getAltServer(), NetLoginGUI.this.loginTF.getText(), rememberedPassword);
+						NetLoginGUI.this.netLoginConnection.login(
+								NetLoginGUI.this.p.getAltServer(),
+								NetLoginGUI.this.loginTF.getText(),
+								rememberedPassword);
 					else
-						NetLoginGUI.this.netLoginConnection.login(NetLoginGUI.this.loginTF.getText(), rememberedPassword);
+						NetLoginGUI.this.netLoginConnection.login(
+								NetLoginGUI.this.loginTF.getText(),
+								rememberedPassword);
 					NetLoginGUI.this.loginDialog.setVisible(false);
+				} catch (IOException localIOException) {
+					if (localIOException.getMessage().equals(
+							"Incorrect password"))
+						NetLoginGUI.this.showError(localIOException
+								.getMessage());
+
 				}
-				catch (IOException localIOException)
-				{
-					if (localIOException.getMessage().equals("Incorrect password"))
-						NetLoginGUI.this.showError(localIOException.getMessage());
-					
-				}
-				rememberedPassword=NetLoginGUI.this.passwordTF.getText();
-				((JButton)paramAnonymousActionEvent.getSource()).setEnabled(false);
+				rememberedPassword = NetLoginGUI.this.passwordTF.getText();
+				((JButton) paramAnonymousActionEvent.getSource())
+						.setEnabled(false);
 				NetLoginGUI.this.passwordTF.setText("");
 			}
 		});
 		localJButton.setEnabled(false);
-		this.passwordTF.addCaretListener(new CaretListener()
-		{
-			public void caretUpdate(CaretEvent paramAnonymousCaretEvent)
-			{
-				if ((!NetLoginGUI.this.passwordTF.getText().equals("")) && (!NetLoginGUI.this.loginTF.getText().equals("")))
+		this.passwordTF.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent paramAnonymousCaretEvent) {
+				if ((!NetLoginGUI.this.passwordTF.getText().equals(""))
+						&& (!NetLoginGUI.this.loginTF.getText().equals("")))
 					localJButton.setEnabled(true);
 				else
 					localJButton.setEnabled(false);
 			}
 		});
-		this.loginTF.addCaretListener(new CaretListener()
-		{
-			public void caretUpdate(CaretEvent paramAnonymousCaretEvent)
-			{
-				if ((!NetLoginGUI.this.passwordTF.getText().equals("")) && (!NetLoginGUI.this.loginTF.getText().equals("")))
+		this.loginTF.addCaretListener(new CaretListener() {
+			public void caretUpdate(CaretEvent paramAnonymousCaretEvent) {
+				if ((!NetLoginGUI.this.passwordTF.getText().equals(""))
+						&& (!NetLoginGUI.this.loginTF.getText().equals("")))
 					localJButton.setEnabled(true);
 				else
 					localJButton.setEnabled(false);
 			}
 		});
-		this.passwordTF.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
-				NetLoginGUI.this.netLoginConnection.setUseStaticPingPort(NetLoginGUI.this.p.getUseStaticPingPort());
+		this.passwordTF.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
+				NetLoginGUI.this.netLoginConnection
+						.setUseStaticPingPort(NetLoginGUI.this.p
+								.getUseStaticPingPort());
 				netLoginConnection.setUsePingTimeout(p.getUsePingTimeout());
-				try
-				{
+				try {
 					if (NetLoginGUI.this.p.getUseAltServer())
-						NetLoginGUI.this.netLoginConnection.login(NetLoginGUI.this.p.getAltServer(), NetLoginGUI.this.loginTF.getText(), NetLoginGUI.this.passwordTF.getText());
+						NetLoginGUI.this.netLoginConnection.login(
+								NetLoginGUI.this.p.getAltServer(),
+								NetLoginGUI.this.loginTF.getText(),
+								NetLoginGUI.this.passwordTF.getText());
 					else
-						NetLoginGUI.this.netLoginConnection.login(NetLoginGUI.this.loginTF.getText(), NetLoginGUI.this.passwordTF.getText());
+						NetLoginGUI.this.netLoginConnection.login(
+								NetLoginGUI.this.loginTF.getText(),
+								NetLoginGUI.this.passwordTF.getText());
 					NetLoginGUI.this.loginDialog.setVisible(false);
+				} catch (IOException localIOException) {
+					if (localIOException.getMessage().equals(
+							"Incorrect password"))
+						NetLoginGUI.this.showError(localIOException
+								.getMessage());
 				}
-				catch (IOException localIOException)
-				{
-					if (localIOException.getMessage().equals("Incorrect password"))
-						NetLoginGUI.this.showError(localIOException.getMessage());
-				}
-				rememberedPassword=NetLoginGUI.this.passwordTF.getText();
+				rememberedPassword = NetLoginGUI.this.passwordTF.getText();
 				localJButton.setEnabled(false);
 				NetLoginGUI.this.passwordTF.setText("");
 			}
 		});
 		JLabel localJLabel = new JLabel("UPI:");
 		localJLabel.setFont(this.globalFont);
-		addExternal(localJPanel, localGridBagConstraints, 0, 0, localJLabel, 3, 13);
+		addExternal(localJPanel, localGridBagConstraints, 0, 0, localJLabel, 3,
+				13);
 		localGridBagConstraints.weightx = 5.0D;
-		addExternal(localJPanel, localGridBagConstraints, 1, 0, this.loginTF, 1, 17);
+		addExternal(localJPanel, localGridBagConstraints, 1, 0, this.loginTF,
+				1, 17);
 		localGridBagConstraints.weightx = 5.0D;
 		localJLabel = new JLabel("Password:");
 		localJLabel.setFont(new Font("Dialog", 0, 12));
-		addExternal(localJPanel, localGridBagConstraints, 0, 1, localJLabel, 3, 13);
-		addExternal(localJPanel, localGridBagConstraints, 1, 1, this.passwordTF, 1, 17);
-		addExternal(localJPanel, localGridBagConstraints, 1, 2, localJButton, 0, 10);
+		addExternal(localJPanel, localGridBagConstraints, 0, 1, localJLabel, 3,
+				13);
+		addExternal(localJPanel, localGridBagConstraints, 1, 1,
+				this.passwordTF, 1, 17);
+		addExternal(localJPanel, localGridBagConstraints, 1, 2, localJButton,
+				0, 10);
 		localJButton.setSelected(true);
 		this.loginDialog.setContentPane(localJPanel);
 		this.loginDialog.setTitle("Login");
@@ -402,29 +409,26 @@ public class NetLoginGUI extends JFrame
 		this.loginDialog.setLocationRelativeTo(null);
 		this.loginDialog.setResizable(false);
 		this.loginDialog.setIconImage(new ImageIcon(icon_imagename).getImage());
-		
+
 	}
 
-	private void showError(String paramString)
-	{
+	private void showError(String paramString) {
 		JOptionPane.showMessageDialog(this, "JNetLogin - " + paramString);
 		disconnect();
 	}
 
-	private void makeMenuBar()
-	{
+	private void makeMenuBar() {
 		JMenu localJMenu1 = new JMenu("NetLogin");
 		JMenu localJMenu2 = new JMenu("Help");
 		JMenuItem localJMenuItem = new JMenuItem("Login");
 		localJMenu1.setFont(this.globalFont);
 		localJMenu2.setFont(this.globalFont);
 		localJMenuItem.setFont(this.globalFont);
-		localJMenuItem.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		localJMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.this.loginDialog.setVisible(true);
-				NetLoginGUI.this.loginDialog.setBounds(NetLoginGUI.this.p.getLoginDialogBounds());
+				NetLoginGUI.this.loginDialog.setBounds(NetLoginGUI.this.p
+						.getLoginDialogBounds());
 				NetLoginGUI.this.loginDialog.setLocationRelativeTo(null);
 			}
 		});
@@ -432,20 +436,16 @@ public class NetLoginGUI extends JFrame
 		this.loginMenuItem = localJMenuItem;
 		localJMenuItem = new JMenuItem("Preferences");
 		localJMenuItem.setFont(this.globalFont);
-		localJMenuItem.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		localJMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.this.p.showPreferencesDialog();
 			}
 		});
 		localJMenu1.add(localJMenuItem);
 		localJMenuItem = new JMenuItem("Change Password");
 		localJMenuItem.setFont(this.globalFont);
-		localJMenuItem.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		localJMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.openURL(NetLoginGUI.passwdChangeURL);
 			}
 		});
@@ -455,10 +455,8 @@ public class NetLoginGUI extends JFrame
 		localJMenu1.addSeparator();
 		localJMenuItem = new JMenuItem("Quit");
 		localJMenuItem.setFont(this.globalFont);
-		localJMenuItem.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		localJMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.this.savePreferences();
 				System.exit(0);
 			}
@@ -466,20 +464,16 @@ public class NetLoginGUI extends JFrame
 		localJMenu1.add(localJMenuItem);
 		localJMenuItem = new JMenuItem("About");
 		localJMenuItem.setFont(this.globalFont);
-		localJMenuItem.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		localJMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.this.showAbout();
 			}
 		});
 		localJMenu2.add(localJMenuItem);
 		localJMenuItem = new JMenuItem("Show Charge Rates...");
 		localJMenuItem.setFont(this.globalFont);
-		localJMenuItem.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		localJMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.openURL(NetLoginGUI.helpURL);
 			}
 		});
@@ -490,127 +484,102 @@ public class NetLoginGUI extends JFrame
 		setJMenuBar(localJMenuBar);
 	}
 
-	public static void openURL(String paramString)
-	{
+	public static void openURL(String paramString) {
 		String str = System.getProperty("os.name");
-		try
-		{
+		try {
 			Object localObject;
 			Method localMethod;
-			if (str.startsWith("Mac"))
-			{
+			if (str.startsWith("Mac")) {
 				localObject = Class.forName("com.apple.eio.FileManager");
-				localMethod = ((Class)localObject).getDeclaredMethod("openURL", new Class[] { String.class });
+				localMethod = ((Class) localObject).getDeclaredMethod(
+						"openURL", new Class[] { String.class });
 				localMethod.invoke(null, new Object[] { paramString });
 			}
 
-			if(str.startsWith("Windows"))
-			{
-				Runtime.getRuntime().exec((new StringBuilder()).append("rundll32 url.dll,FileProtocolHandler ").append(paramString).toString());
-			} else
-			{
-				String as[] = {
-						"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"
-				};
+			if (str.startsWith("Windows")) {
+				Runtime.getRuntime()
+						.exec((new StringBuilder())
+								.append("rundll32 url.dll,FileProtocolHandler ")
+								.append(paramString).toString());
+			} else {
+				String as[] = { "firefox", "opera", "konqueror", "epiphany",
+						"mozilla", "netscape" };
 				String s2 = null;
-				for(int i = 0; i < as.length && s2 == null; i++)
-					if(Runtime.getRuntime().exec(new String[] {
-							"which", as[i]
-					}).waitFor() == 0)
+				for (int i = 0; i < as.length && s2 == null; i++)
+					if (Runtime.getRuntime()
+							.exec(new String[] { "which", as[i] }).waitFor() == 0)
 						s2 = as[i];
 
-				if(s2 == null)
+				if (s2 == null)
 					throw new Exception("Could not find web browser");
-				Runtime.getRuntime().exec(new String[] {
-						s2, paramString
-				});
+				Runtime.getRuntime().exec(new String[] { s2, paramString });
 			}
-		}
-		catch(Exception exception)
-		{
+		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
 	}
 
-	public void minimizeToTray()
-	{
+	public void minimizeToTray() {
 		String str = "Status:Discounnted";
 		if (this.connected)
 			str = "Status:Connected InternetPlan:" + this.plan_name;
 		SystemTray localSystemTray = SystemTray.getSystemTray();
-		try
-		{
+		try {
 			localSystemTray.add(this.trayIcon);
 			this.trayIcon.setToolTip(str);
-		}
-		catch (Exception localException)
-		{
+		} catch (Exception localException) {
 			System.out.println("add trayIcon error" + localException);
 		}
 	}
 
-	private void initTrayIcon()
-	{
-		Image localImage = Toolkit.getDefaultToolkit().getImage(getClass().getResource(icon_imagename));
+	private void initTrayIcon() {
+		Image localImage = Toolkit.getDefaultToolkit().getImage(
+				getClass().getResource(icon_imagename));
 		PopupMenu localPopupMenu = new PopupMenu();
-		MouseListener local13 = new MouseListener()
-		{
-			public void mouseClicked(MouseEvent paramAnonymousMouseEvent)
-			{
+		MouseListener local13 = new MouseListener() {
+			public void mouseClicked(MouseEvent paramAnonymousMouseEvent) {
 				SystemTray.getSystemTray().remove(NetLoginGUI.this.trayIcon);
 				NetLoginGUI.this.setState(0);
 				NetLoginGUI.this.setVisible(true);
 				NetLoginGUI.this.toFront();
 			}
 
-			public void mouseEntered(MouseEvent paramAnonymousMouseEvent)
-			{
+			public void mouseEntered(MouseEvent paramAnonymousMouseEvent) {
 			}
 
-			public void mouseExited(MouseEvent paramAnonymousMouseEvent)
-			{
+			public void mouseExited(MouseEvent paramAnonymousMouseEvent) {
 			}
 
-			public void mousePressed(MouseEvent paramAnonymousMouseEvent)
-			{
+			public void mousePressed(MouseEvent paramAnonymousMouseEvent) {
 			}
 
-			public void mouseReleased(MouseEvent paramAnonymousMouseEvent)
-			{
+			public void mouseReleased(MouseEvent paramAnonymousMouseEvent) {
 			}
 		};
 		MenuItem localMenuItem1 = new MenuItem("Help");
-		ActionListener local14 = new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		ActionListener local14 = new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.openURL(NetLoginGUI.helpURL);
 			}
 		};
 		localMenuItem1.addActionListener(local14);
 		MenuItem localMenuItem2 = new MenuItem("Show Charge Rates");
-		ActionListener local15 = new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		ActionListener local15 = new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.openURL(NetLoginGUI.helpURL);
 			}
 		};
 		localMenuItem2.addActionListener(local15);
 		MenuItem localMenuItem3 = new MenuItem("Change Password");
-		ActionListener local16 = new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		ActionListener local16 = new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				NetLoginGUI.openURL(NetLoginGUI.passwdChangeURL);
 			}
 		};
 		localMenuItem3.addActionListener(local16);
 		MenuItem localMenuItem4 = new MenuItem("Open JNetLogin");
-		ActionListener local17 = new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		ActionListener local17 = new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				SystemTray.getSystemTray().remove(NetLoginGUI.this.trayIcon);
 				NetLoginGUI.this.setState(0);
 				NetLoginGUI.this.setVisible(true);
@@ -619,10 +588,8 @@ public class NetLoginGUI extends JFrame
 		};
 		localMenuItem4.addActionListener(local17);
 		MenuItem localMenuItem5 = new MenuItem("Exit");
-		ActionListener local18 = new ActionListener()
-		{
-			public void actionPerformed(ActionEvent paramAnonymousActionEvent)
-			{
+		ActionListener local18 = new ActionListener() {
+			public void actionPerformed(ActionEvent paramAnonymousActionEvent) {
 				System.exit(0);
 			}
 		};
@@ -640,7 +607,7 @@ public class NetLoginGUI extends JFrame
 	}
 }
 
-/* Location:           C:\Documents and Settings\Josh\Desktop\JNetLogin.jar
- * Qualified Name:     NetLoginGUI
- * JD-Core Version:    0.6.2
+/*
+ * Location: C:\Documents and Settings\Josh\Desktop\JNetLogin.jar Qualified
+ * Name: NetLoginGUI JD-Core Version: 0.6.2
  */
