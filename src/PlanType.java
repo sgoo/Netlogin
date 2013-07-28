@@ -11,6 +11,7 @@ public class PlanType {
 		new PlanType(83886080, "NoAccess");
 		new PlanType(100663296, "Postgraduate");
 	}
+	@SuppressWarnings("unused")
 	private int num;
 	private String name;
 
