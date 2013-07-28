@@ -46,6 +46,7 @@ public class PingRespHandler extends Thread {
 	}
 
 	public synchronized void run() {
+		System.out.println("STARTED!!!");
 		byte[] arrayOfByte1 = new byte[8192];
 		DatagramPacket localDatagramPacket = new DatagramPacket(arrayOfByte1, arrayOfByte1.length);
 		int i2 = 0;
@@ -54,8 +55,9 @@ public class PingRespHandler extends Thread {
 		while ((this.loop) && (i2 < 10) && (this.pinger.getOutstandingPings() < pinger.keepAliveTimeout)) {
 			localDatagramPacket = new DatagramPacket(arrayOfByte1, arrayOfByte1.length);
 			try {
+				// System.out.println("WAITING!!!");
 				this.s.receive(localDatagramPacket);
-				System.out.println("RECIEVED SOMETHING!");
+				// System.out.println("RECIEVED SOMETHING!");
 			} catch (InterruptedIOException localInterruptedIOException) {
 				// System.out.println("No packet recieved.");
 				continue;
@@ -65,7 +67,7 @@ public class PingRespHandler extends Thread {
 				continue;
 			}
 			int k = localDatagramPacket.getLength();
-			System.out.println(localDatagramPacket.toString());
+			// System.out.println(localDatagramPacket.toString());
 			if (k < 24) {
 				System.out.println("Short packet");
 				i2++;
@@ -91,7 +93,7 @@ public class PingRespHandler extends Thread {
 							this.parent.updateV3(m, i3, true, new String(arrayOfByte2));
 							i2 = 0;
 							this.pinger.zeroOutstandingPings();
-							System.out.println("recieved a keepalive.");
+							// System.out.println("recieved a keepalive.");
 							if (n == 0)
 								end();
 						}

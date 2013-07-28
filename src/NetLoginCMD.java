@@ -5,6 +5,7 @@ import java.util.Properties;
 public class NetLoginCMD implements NetLoginListener {
 
 	private NetLoginConnection conn;
+	private Integer startingBytes = null;
 
 	public NetLoginCMD() {
 		conn = new NetLoginConnection(this);
@@ -29,14 +30,27 @@ public class NetLoginCMD implements NetLoginListener {
 	}
 
 	@Override
-	public void updateV3(int bytesUsed, int planType, boolean connected,
-			String string) {
-		System.out.println("bytesUsed" + bytesUsed);
-		System.out.println("planType" + planType);
-		System.out.println("connected" + connected);
-		System.out.println("string" + string);
+	public void updateV3(int bytesUsed, int planType, boolean connected, String string) {
+		if (startingBytes == null) {
+			startingBytes = bytesUsed;
+		}
+		System.out.println("This Session " + kbToStr(bytesUsed - startingBytes) + " Total: " + kbToStr(bytesUsed));
 	}
 
+	public String kbToStr(double kb) {
+		String unit = "KB";
+		String[] units = { "KB", "MB", "GB", "TB" };
+		int i;
+		for (i = 0; i < units.length; i++) {
+			if (kb > 1000) {
+				kb /= 1024;
+				unit = units[i + 1];
+			} else {
+				break;
+			}
+		}
+		return kb > 10 ? String.format("%3.0f%s", kb, unit) : String.format("%3.1f%s", kb, unit);
+	}
 }
 
 /*

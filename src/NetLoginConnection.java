@@ -49,8 +49,8 @@ public class NetLoginConnection {
 	int Response_Port;
 	PingSender pinger = null;
 	PingRespHandler ping_receiver = null;
-	boolean useStaticPingPort = false;
-	boolean usePingTimeout = false;
+	boolean useStaticPingPort = true;
+	boolean usePingTimeout = true;
 
 	String username;
 	int OnPeak;
